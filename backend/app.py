@@ -6,7 +6,7 @@ import json
 import os
 import time
 from dotenv import load_dotenv
-# from bson import json_util
+from bson import json_util
 
 app = Flask(__name__)
 cors = CORS(app)
