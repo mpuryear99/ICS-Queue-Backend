@@ -1,0 +1,9 @@
+pprint
+flask
+pymongo[srv]
+Flask-Pymongo
+flask_cors
+json
+os
+python-dotenv
+bson
