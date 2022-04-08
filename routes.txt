@@ -1,0 +1,42 @@
+
+GET     /machines           
+GET     /machines/<id>
+DEL     /machines/<id>?delete
+POST    /machines/add
+
+GET     /appointments
+            ?machineid=     machine._id
+            ?userid=        user._id
+GET     /appointment/<id>
+DEL     /appointment/<id>?delete
+POST    /appointments/add
+
+GET     /users
+GET     /users/<id>
+DEL     /users/<id>?delete
+POST    /users/add
+
+
+
+machine {
+    _id,
+    name,
+    image,
+    description
+}
+
+appointment {
+    _id,
+    user_id,
+    machine_id,
+    username,
+    startTime,
+    endTime
+}
+
+user {
+    _id,
+    netid,
+    email,
+    appointments: [<_id>, ...]
+}
