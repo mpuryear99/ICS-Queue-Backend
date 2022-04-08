@@ -91,5 +91,28 @@ def getallappointments():
         data.append(a)
     return json.dumps(data)
 
+@app.route('/addimagepath/', methods=['POST'])
+def addimagepath():
+    recv = request.args.to_dict()
+    if 'id' in recv and 'imagePath' in recv:
+        id = recv['id']
+        path = recv['imagePath']
+        machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"image": path}})
+        return "200 Ok"
+    else:
+        return "Error: No id or imagePath provided"
+
+@app.route('/updatedescription', methods=['POST'])
+def updatedescription():
+    recv = request.args.to_dict()
+    if 'id' in recv and 'description' in recv:
+        id = recv['id']
+        description = recv['description']
+        machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"description": description}})
+        return "200 OK"
+    else:
+        return "Error: No description provided"
+
+
 if __name__ == "__main__":
     app.run(host='127.0.0.1', debug=True, port=5000)
