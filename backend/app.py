@@ -7,7 +7,7 @@ import json
 import os
 import time
 from dotenv import load_dotenv
-
+from bson import ObjectId
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -23,9 +23,9 @@ machines_col = db['machines']
 appt_col = db['appointments']
 
 # returns desired machine based on name
-@app.route('/getmachine/<name>', methods=['GET'])
-def getmachine(name):
-    data = machines_col.find_one({'name':name})
+@app.route('/getmachine/<id>', methods=['GET'])
+def getmachine(id):
+    data = machines_col.find_one({'_id':ObjectId(id)})
     if data != None:
         data['_id'] = str(data['_id'])
         print(data)
@@ -47,7 +47,7 @@ def getmachines():
 def addmachines(fn):
     js = json.load(open(fn))
 
-    res = machines.insert_many(js['machines'])
+    res = machines_col.insert_many(js['machines'])
     return json.dumps(res)
 
 # adds a single appointment to the database
@@ -86,11 +86,10 @@ def getweekappointments():
 @app.route('/getallappointments/', methods=['GET'])
 def getallappointments():
     data = []
-    for a in appointments.find({"_id": {"$gte": 0}}):
+    for a in appt_col.find({"_id": {"$gte": 0}}):
         a['_id'] = str(a['_id'])
         data.append(a)
     return json.dumps(data)
 
 if __name__ == "__main__":
-
     app.run(host='127.0.0.1', debug=True, port=5000)
