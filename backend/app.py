@@ -1,3 +1,4 @@
+from platform import machine
 from pprint import pprint
 from flask import Flask, redirect, url_for, request
 from pymongo import MongoClient
@@ -27,6 +28,7 @@ def getmachine(name):
     data = machines_col.find_one({'name':name})
     if data != None:
         data['_id'] = str(data['_id'])
+        print(data)
         return data
 
 # returns all the machines in the database
@@ -44,7 +46,8 @@ def getmachines():
 @app.route('/addmachines/<name>', methods=['POST'])
 def addmachines(fn):
     js = json.load(open(fn))
-    res = machines_col.insert_many(js['machines'])
+
+    res = machines.insert_many(js['machines'])
     return json.dumps(res)
 
 # adds a single appointment to the database
@@ -78,6 +81,16 @@ def getweekappointments():
         data.append(a)
     return json.dumps(data)
 
+# Returns all appointments 
+# example request: GET http://127.0.0.1:5000/getallappointments/
+@app.route('/getallappointments/', methods=['GET'])
+def getallappointments():
+    data = []
+    for a in appointments.find({"_id": {"$gte": 0}}):
+        a['_id'] = str(a['_id'])
+        data.append(a)
+    return json.dumps(data)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(host='127.0.0.1', debug=True, port=5000)
