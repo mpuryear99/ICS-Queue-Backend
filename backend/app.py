@@ -6,7 +6,7 @@ import json
 import os
 import time
 from dotenv import load_dotenv
-from bson import json_util
+
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -18,13 +18,13 @@ client = MongoClient(ATLAS_URI)
 
 
 db = client['ics_scheduler']
-machines = db['machines']
-appointments = db['appointments']
+machines_col = db['machines']
+appt_col = db['appointments']
 
 # returns desired machine based on name
 @app.route('/getmachine/<name>', methods=['GET'])
 def getmachine(name):
-    data = machines.find_one({'name':name})
+    data = machines_col.find_one({'name':name})
     if data != None:
         data['_id'] = str(data['_id'])
         return data
@@ -33,7 +33,7 @@ def getmachine(name):
 @app.route('/getmachines/', methods=['GET'])
 def getmachines():
     data = []
-    for m in machines.find({}):
+    for m in machines_col.find({}):
         print(m)
         m['_id'] = str(m['_id'])
         print(m)
@@ -43,10 +43,8 @@ def getmachines():
 # adds machines to database using specified file
 @app.route('/addmachines/<name>', methods=['POST'])
 def addmachines(fn):
-    db = client['ics_scheduler']
-    col = db['machines']
     js = json.load(open(fn))
-    res = col.insert_many(js['machines'])
+    res = machines_col.insert_many(js['machines'])
     return json.dumps(res)
 
 # adds a single appointment to the database
@@ -63,9 +61,8 @@ def addappointment():
     }
     print("data: ", data)
     
-    res = appointments.insert_one(data)
+    res = appt_col.insert_one(data)
     return str(res.inserted_id)
-    
 
 # Returns all appointments within the week
 # example request: GET http://127.0.0.1:5000/getweekappointments/
@@ -76,7 +73,7 @@ def getweekappointments():
     nextWeek = now + 604800 # 604800 seconds in a week
     print(now)
     # finds appointments between now and one week from now
-    for a in appointments.find({"startTime": {"$gte": now, "$lt": nextWeek}}):
+    for a in appt_col.find({"startTime": {"$gte": now, "$lt": nextWeek}}):
         a['_id'] = str(a['_id'])
         data.append(a)
     return json.dumps(data)
@@ -84,4 +81,3 @@ def getweekappointments():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
