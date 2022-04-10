@@ -23,7 +23,7 @@ machines_col = db['machines']
 appt_col = db['appointments']
 
 # returns desired machine based on name
-@app.route('/getmachine/<id>', methods=['GET'])
+@app.route('/machines/<id>', methods=['GET'])
 def getmachine(id):
     data = machines_col.find_one({'_id':ObjectId(id)})
     if data != None:
@@ -32,7 +32,7 @@ def getmachine(id):
         return data
 
 # returns all the machines in the database
-@app.route('/getmachines/', methods=['GET'])
+@app.route('/machines/', methods=['GET'])
 def getmachines():
     data = []
     for m in machines_col.find({}):
@@ -42,13 +42,15 @@ def getmachines():
         data.append(m)
     return json.dumps(data)
 
-# adds machines to database using specified file
-@app.route('/addmachines/<name>', methods=['POST'])
-def addmachines(fn):
-    js = json.load(open(fn))
+# add a machine to the database
+@app.route('/machines/add', methods=['POST'])
+def addmachine():
+    pass
 
-    res = machines_col.insert_many(js['machines'])
-    return json.dumps(res)
+# deletes machine from database
+@app.route('/machines/<id>/delete', methods=['DELETE'])
+def deletemachine(id):
+    pass
 
 # adds a single appointment to the database
 # example request: POST http://127.0.0.1:5000/addappointment/?name=Tyler&machineID=123&startTime=456&endTime=789
@@ -91,27 +93,29 @@ def getallappointments():
         data.append(a)
     return json.dumps(data)
 
-@app.route('/addimagepath/', methods=['POST'])
-def addimagepath():
-    recv = request.args.to_dict()
-    if 'id' in recv and 'imagePath' in recv:
-        id = recv['id']
-        path = recv['imagePath']
-        machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"image": path}})
-        return "200 Ok"
-    else:
-        return "Error: No id or imagePath provided"
 
-@app.route('/updatedescription', methods=['POST'])
-def updatedescription():
-    recv = request.args.to_dict()
-    if 'id' in recv and 'description' in recv:
-        id = recv['id']
-        description = recv['description']
-        machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"description": description}})
-        return "200 OK"
-    else:
-        return "Error: No description provided"
+# ~~~~~~ helper functions ~~~~~~
+# These are functions that help in the back-end and cannot be accessed by front-end
+
+# helper function to add machines to database using specified file
+def addmachines(fn):
+    js = json.load(open(fn))
+
+    res = machines_col.insert_many(js['machines'])
+    return json.dumps(res)
+
+# update a machine's name
+def updatemachinename(id, name):
+    machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"name": name}})
+
+# update a machine description
+def updatedescription(id, description):
+    machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"description": description}})
+
+# update the image path for a machine
+def updateimagepath(id, imagePath):
+    machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"image": path}})
+
 
 
 if __name__ == "__main__":
