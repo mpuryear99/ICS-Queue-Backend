@@ -114,7 +114,7 @@ def updatedescription(id, description):
 
 # update the image path for a machine
 def updateimagepath(id, imagePath):
-    machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"image": path}})
+    machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"image": imagePath}})
 
 
 
