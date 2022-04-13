@@ -36,9 +36,7 @@ def getmachine(id):
 def getmachines():
     data = []
     for m in machines_col.find({}):
-        print(m)
         m['_id'] = str(m['_id'])
-        print(m)
         data.append(m)
     return json.dumps(data)
 
@@ -100,8 +98,16 @@ def getallappointments():
 # helper function to add machines to database using specified file
 def addmachines(fn):
     js = json.load(open(fn))
-
-    res = machines_col.insert_many(js['machines'])
+    for m in js:
+        try:
+            if m['description'][0] == ' ':
+                m['description']=m['description'][1:]
+            m['description'] = m['description'].capitalize()
+        except Exception as e:
+            print(e)
+        print(m)
+    
+    res = machines_col.insert_many(js)
     return json.dumps(res)
 
 # update a machine's name
@@ -115,7 +121,6 @@ def updatedescription(id, description):
 # update the image path for a machine
 def updateimagepath(id, imagePath):
     machines_col.update_one({"_id": ObjectId(id)}, {"$set": {"image": imagePath}})
-
 
 
 if __name__ == "__main__":
