@@ -68,7 +68,8 @@ def addmachine():
 # Deletes machine from database
 @app.route('/machines/<id>/delete', methods=['DELETE'])
 def deletemachine(id):
-    pass
+    res = machines_col.delete_one({"_id": ObjectId(id)})
+    return str(res.deleted_count)
 
 
 # ~~~~~~ APPOINTMENTS ~~~~~~
