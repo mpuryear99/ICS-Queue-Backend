@@ -26,7 +26,7 @@ users_col = db['users']
 
 # ~~~~~~ MACHINE ~~~~~~
 
-# returns desired machine based on name
+# Returns desired machine based on name
 @app.route('/machines/<id>/', methods=['GET'])
 def getmachine(id):
     data = machines_col.find_one({'_id':ObjectId(id)})
@@ -35,7 +35,7 @@ def getmachine(id):
         print(data)
         return data
 
-# returns all the machines in the database
+# Returns all the machines in the database
 @app.route('/machines/', methods=['GET'])
 def getmachines():
     data = []
@@ -44,12 +44,12 @@ def getmachines():
         data.append(m)
     return json.dumps(data)
 
-# add a machine to the database
+# Add a machine to the database
 @app.route('/machines/add/', methods=['POST'])
 def addmachine():
     pass
 
-# deletes machine from database
+# Deletes machine from database
 @app.route('/machines/<id>/delete/', methods=['DELETE'])
 def deletemachine(id):
     pass
@@ -98,6 +98,17 @@ def getallappointments():
         data.append(a)
     return json.dumps(data)
 
+# Returns information about an appointment based on its ID
+@app.route('/appointments/<id>/', methods=['GET'])
+def getappointment(id):
+    pass
+
+# Deletes an appointment based on its ID
+@app.route('/appointments/<id>/delete/', methods=['DELETE'])
+def deleteappointment(id):
+    pass
+
+
 
 # ~~~~~~ USERS ~~~~~~
 
@@ -121,9 +132,25 @@ def deleteuser(id):
     pass
 
 # Add a user to the database
+# format for the user in the database:
+# user {
+#     _id,
+#     netid,
+#     email,
+#     appointments: [<_id>, ...]
+# }
 @app.route('/users/add/', methods=['POST'])
 def adduser():
-    pass
+    recv = request.args.to_dict()
+
+    user = {
+        'netid': recv['netid'],
+        'email': recv['email'],
+        'appointments': []
+    }
+    print(user)
+    res = users_col.insert_one(user)
+    return str(res.inserted_id)
 
 # ~~~~~~ helper functions ~~~~~~
 # These are functions that help in the back-end and cannot be accessed by front-end
