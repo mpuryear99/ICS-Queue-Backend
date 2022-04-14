@@ -27,7 +27,7 @@ users_col = db['users']
 # ~~~~~~ MACHINE ~~~~~~
 
 # returns desired machine based on name
-@app.route('/machines/<id>', methods=['GET'])
+@app.route('/machines/<id>/', methods=['GET'])
 def getmachine(id):
     data = machines_col.find_one({'_id':ObjectId(id)})
     if data != None:
@@ -45,12 +45,12 @@ def getmachines():
     return json.dumps(data)
 
 # add a machine to the database
-@app.route('/machines/add', methods=['POST'])
+@app.route('/machines/add/', methods=['POST'])
 def addmachine():
     pass
 
 # deletes machine from database
-@app.route('/machines/<id>/delete', methods=['DELETE'])
+@app.route('/machines/<id>/delete/', methods=['DELETE'])
 def deletemachine(id):
     pass
 
@@ -58,8 +58,8 @@ def deletemachine(id):
 # ~~~~~~ APPOINTMENTS ~~~~~~
 
 # adds a single appointment to the database
-# example request: POST http://127.0.0.1:5000/addappointment/?name=Tyler&machineID=123&startTime=456&endTime=789
-@app.route('/addappointment/', methods=['POST'])
+# example request: POST http://127.0.0.1:5000/appointments/add/?name=Tyler&machineID=123&startTime=456&endTime=789
+@app.route('/appointments/add/', methods=['POST'])
 def addappointment():
     recieved = request.args.to_dict()
 
@@ -76,7 +76,7 @@ def addappointment():
 
 # Returns all appointments within the week
 # example request: GET http://127.0.0.1:5000/getweekappointments/
-@app.route('/getweekappointments/', methods=['GET'])
+@app.route('/appointments/week/', methods=['GET'])
 def getweekappointments():
     data = []
     now = time.time()
@@ -89,8 +89,8 @@ def getweekappointments():
     return json.dumps(data)
 
 # Returns all appointments 
-# example request: GET http://127.0.0.1:5000/getallappointments/
-@app.route('/getallappointments/', methods=['GET'])
+# example request: GET http://127.0.0.1:5000/appointments/
+@app.route('/appointments/', methods=['GET'])
 def getallappointments():
     data = []
     for a in appt_col.find({"_id": {"$gte": 0}}):
@@ -111,17 +111,17 @@ def getusers():
     return json.dumps(data)
 
 # Return a user based on id
-@app.route('/users/<id>', methods=['GET'])
+@app.route('/users/<id>/', methods=['GET'])
 def getuser(id):
     pass
 
 # Delete a user from the database
-@app.route('/users/<id>/delete', methods=['DELETE'])
+@app.route('/users/<id>/delete/', methods=['DELETE'])
 def deleteuser(id):
     pass
 
 # Add a user to the database
-@app.route('/users/add', methods=['POST'])
+@app.route('/users/add/', methods=['POST'])
 def adduser():
     pass
 
