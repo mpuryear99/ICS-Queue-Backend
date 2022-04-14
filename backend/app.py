@@ -45,6 +45,13 @@ def getmachines():
     return json.dumps(data)
 
 # Add a machine to the database
+# Machine structure in the database:
+# machine {
+#     _id,
+#     name,
+#     image,
+#     description
+# }
 @app.route('/machines/add', methods=['POST'])
 def addmachine():
     pass
@@ -59,13 +66,23 @@ def deletemachine(id):
 
 # adds a single appointment to the database
 # example request: POST http://127.0.0.1:5000/appointments/add/?name=Tyler&machineID=123&startTime=456&endTime=789
+# appointment structure in database:
+# appointment {
+#     _id,
+#     user_id,
+#     machine_id,
+#     username,
+#     startTime,
+#     endTime
+# }
 @app.route('/appointments/add', methods=['POST'])
 def addappointment():
     recieved = request.args.to_dict()
 
     data = {
-        'name': recieved['name'],
-        'machineID': int(recieved['machineID']),
+        'user_id': ObjectId(recieved['name']),
+        'machineID': ObjectId(recieved['machineID']),
+        'username': recieved['username'],
         'startTime': float(recieved['startTime']),
         'endTime': float(recieved['endTime'])
     }
