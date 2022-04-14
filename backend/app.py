@@ -21,6 +21,10 @@ client = MongoClient(ATLAS_URI)
 db = client['ics_scheduler']
 machines_col = db['machines']
 appt_col = db['appointments']
+users_col = db['users']
+
+
+# ~~~~~~ MACHINE ~~~~~~
 
 # returns desired machine based on name
 @app.route('/machines/<id>', methods=['GET'])
@@ -49,6 +53,9 @@ def addmachine():
 @app.route('/machines/<id>/delete', methods=['DELETE'])
 def deletemachine(id):
     pass
+
+
+# ~~~~~~ APPOINTMENTS ~~~~~~
 
 # adds a single appointment to the database
 # example request: POST http://127.0.0.1:5000/addappointment/?name=Tyler&machineID=123&startTime=456&endTime=789
@@ -91,6 +98,32 @@ def getallappointments():
         data.append(a)
     return json.dumps(data)
 
+
+# ~~~~~~ USERS ~~~~~~
+
+# Returns all the users
+@app.route('/users/')
+def getusers():
+    data = []
+    for u in users_col.find({}):
+        u['_id'] = str(u['_id'])
+        data.append(u)
+    return json.dumps(data)
+
+# Return a user based on id
+@app.route('/users/<id>', methods=['GET'])
+def getuser(id):
+    pass
+
+# Delete a user from the database
+@app.route('/users/<id>/delete', methods=['DELETE'])
+def deleteuser(id):
+    pass
+
+# Add a user to the database
+@app.route('/users/add', methods=['POST'])
+def adduser():
+    pass
 
 # ~~~~~~ helper functions ~~~~~~
 # These are functions that help in the back-end and cannot be accessed by front-end
