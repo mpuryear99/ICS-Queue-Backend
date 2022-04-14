@@ -27,7 +27,7 @@ users_col = db['users']
 # ~~~~~~ MACHINE ~~~~~~
 
 # Returns desired machine based on name
-@app.route('/machines/<id>/', methods=['GET'])
+@app.route('/machines/<id>', methods=['GET'])
 def getmachine(id):
     data = machines_col.find_one({'_id':ObjectId(id)})
     if data != None:
@@ -36,7 +36,7 @@ def getmachine(id):
         return data
 
 # Returns all the machines in the database
-@app.route('/machines/', methods=['GET'])
+@app.route('/machines', methods=['GET'])
 def getmachines():
     data = []
     for m in machines_col.find({}):
@@ -45,12 +45,12 @@ def getmachines():
     return json.dumps(data)
 
 # Add a machine to the database
-@app.route('/machines/add/', methods=['POST'])
+@app.route('/machines/add', methods=['POST'])
 def addmachine():
     pass
 
 # Deletes machine from database
-@app.route('/machines/<id>/delete/', methods=['DELETE'])
+@app.route('/machines/<id>/delete', methods=['DELETE'])
 def deletemachine(id):
     pass
 
@@ -59,7 +59,7 @@ def deletemachine(id):
 
 # adds a single appointment to the database
 # example request: POST http://127.0.0.1:5000/appointments/add/?name=Tyler&machineID=123&startTime=456&endTime=789
-@app.route('/appointments/add/', methods=['POST'])
+@app.route('/appointments/add', methods=['POST'])
 def addappointment():
     recieved = request.args.to_dict()
 
@@ -76,7 +76,7 @@ def addappointment():
 
 # Returns all appointments within the week
 # example request: GET http://127.0.0.1:5000/getweekappointments/
-@app.route('/appointments/week/', methods=['GET'])
+@app.route('/appointments/week', methods=['GET'])
 def getweekappointments():
     data = []
     now = time.time()
@@ -90,7 +90,7 @@ def getweekappointments():
 
 # Returns all appointments 
 # example request: GET http://127.0.0.1:5000/appointments/
-@app.route('/appointments/', methods=['GET'])
+@app.route('/appointments', methods=['GET'])
 def getallappointments():
     data = []
     for a in appt_col.find({"_id": {"$gte": 0}}):
@@ -99,12 +99,12 @@ def getallappointments():
     return json.dumps(data)
 
 # Returns information about an appointment based on its ID
-@app.route('/appointments/<id>/', methods=['GET'])
+@app.route('/appointments/<id>', methods=['GET'])
 def getappointment(id):
     pass
 
 # Deletes an appointment based on its ID
-@app.route('/appointments/<id>/delete/', methods=['DELETE'])
+@app.route('/appointments/<id>/delete', methods=['DELETE'])
 def deleteappointment(id):
     pass
 
@@ -113,7 +113,7 @@ def deleteappointment(id):
 # ~~~~~~ USERS ~~~~~~
 
 # Returns all the users
-@app.route('/users/')
+@app.route('/users')
 def getusers():
     data = []
     for u in users_col.find({}):
@@ -122,12 +122,12 @@ def getusers():
     return json.dumps(data)
 
 # Return a user based on id
-@app.route('/users/<id>/', methods=['GET'])
+@app.route('/users/<id>', methods=['GET'])
 def getuser(id):
     pass
 
 # Delete a user from the database
-@app.route('/users/<id>/delete/', methods=['DELETE'])
+@app.route('/users/<id>/delete', methods=['DELETE'])
 def deleteuser(id):
     pass
 
@@ -139,7 +139,7 @@ def deleteuser(id):
 #     email,
 #     appointments: [<_id>, ...]
 # }
-@app.route('/users/add/', methods=['POST'])
+@app.route('/users/add', methods=['POST'])
 def adduser():
     recv = request.args.to_dict()
 
