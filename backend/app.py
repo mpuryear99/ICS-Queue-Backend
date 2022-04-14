@@ -54,7 +54,16 @@ def getmachines():
 # }
 @app.route('/machines/add', methods=['POST'])
 def addmachine():
-    pass
+    recv = request.args.to_dict()
+
+    m = {
+        "name": recv['name'],
+        "image": recv['image'],
+        "description": recv['description']
+    }
+    print(m)
+    res = machines_col.insert_one(m)
+    return str(res.inserted_id)
 
 # Deletes machine from database
 @app.route('/machines/<id>/delete', methods=['DELETE'])
