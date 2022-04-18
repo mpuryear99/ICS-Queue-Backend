@@ -17,6 +17,7 @@ GET     /users
 GET     /users/<id>
 DEL     /users/<id>?delete
 POST    /users/add
+POST    /users/add/post
 
 
 

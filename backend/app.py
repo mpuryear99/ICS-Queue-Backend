@@ -34,6 +34,7 @@ def getmachine(id):
         data['_id'] = str(data['_id'])
         print(data)
         return data
+    return "Machine not found"
 
 # Returns all the machines in the database
 @app.route('/machines', methods=['GET'])
@@ -190,7 +191,12 @@ def getusers():
 # Return a user based on id
 @app.route('/users/<id>', methods=['GET'])
 def getuser(id):
-    pass
+    data = users_col.find_one({'_id':ObjectId(id)})
+    if data != None:
+        data['_id'] = str(data['_id'])
+        print(data)
+        return data
+    return "User does not exist"
 
 # Delete a user from the database
 @app.route('/users/<id>/delete', methods=['DELETE'])
@@ -217,6 +223,10 @@ def adduser():
     print(user)
     res = users_col.insert_one(user)
     return str(res.inserted_id)
+
+@app.route('/users/add/post', methods=['POST'])
+def adduserpost():
+    pass
 
 # ~~~~~~ helper functions ~~~~~~
 # These are functions that help in the back-end and cannot be accessed by front-end
