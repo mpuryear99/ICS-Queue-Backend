@@ -125,8 +125,8 @@ def addappointment():
     recieved = request.args.to_dict()
 
     data = {
-        'user_id': ObjectId(recieved['name']),
-        'machine_id': ObjectId(recieved['machineID']),
+        'user_id': ObjectId(recieved['user_id']),
+        'machine_id': ObjectId(recieved['machine_id']),
         'username': recieved['username'],
         'startTime': float(recieved['startTime']),
         'endTime': float(recieved['endTime'])
@@ -189,12 +189,57 @@ def getweekappointments():
         data.append(a)
     return json.dumps(data)
 
+# Returns all appointments within start and end time frames
+# Example request: GET http://127.0.0.1:5000/appointments/bytime
+#                           ?startBefore=float
+#                           &startAfter=float
+#                           &endBefore=float
+#                           &endAfter=float
+#                           &existCheck
+# All parameters are optional.
+# Param `existCheck` return true/false based on existance of object(s).
+@app.route('/appointments/bytime', methods=['GET'])
+def getappointmentbytime():
+    received = request.args.to_dict()
+
+    startBefore = received.setdefault('startBefore', None)
+    startAfter  = received.setdefault('startAfter', None)
+    endBefore   = received.setdefault('endBefore', None)
+    endAfter    = received.setdefault('endAfter', None)
+    existCheck  = received.setDefault('existCheck', None)
+
+    findParams = {}
+    if (startBefore is not None):
+        p = findParams.setdefault('startTime', {})
+        p['$lte'] = float(startBefore)
+    if (startAfter is not None):
+        p = findParams.setdefault('startTime', {})
+        p['$gte'] = float(startAfter)
+    if (endBefore is not None):
+        p = findParams.setdefault('endTime', {})
+        p['$lte'] = float(endBefore)
+    if (endAfter is not None):
+        p = findParams.setdefault('endTime', {})
+        p['$gte'] = float(endAfter)
+
+    if (existCheck is not None):
+        exists = False
+        for a in appt_col.find(findParams):
+            exists = True
+            break
+        return json.dumps(exists)
+
+    for a in appt_col.find(findParams):
+        a['_id'] = str(a['_id'])
+        data.append(a)
+    return json.dumps(data)
+
 # Returns all appointments 
 # example request: GET http://127.0.0.1:5000/appointments/
 @app.route('/appointments', methods=['GET'])
 def getallappointments():
     data = []
-    for a in appt_col.find({"_id": {"$gte": 0}}):
+    for a in appt_col.find({}):
         a['_id'] = str(a['_id'])
         data.append(a)
     return json.dumps(data)
