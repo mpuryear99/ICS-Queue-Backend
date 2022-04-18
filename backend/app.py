@@ -128,7 +128,15 @@ def addappointmentpost():
         else:
             return "Invalid key"
 
+    # try to insert the appointment into appointment collection
     res = appt_col.insert_one(received)
+    if not ObjectId.is_valid(res.inserted_id):
+        return "Insertions failed"
+    # add appointment to user's appointments array
+    user = users_col.update_one({"_id": ObjectId(received['user_id'])}, {"$push": {"appointments": res.inserted_id}})
+    if user.upserted_id == None:
+        return "Update failed"
+
     return res
 
 
