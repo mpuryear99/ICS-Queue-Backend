@@ -201,7 +201,8 @@ def getuser(id):
 # Delete a user from the database
 @app.route('/users/<id>/delete', methods=['DELETE'])
 def deleteuser(id):
-    pass
+    res = users_col.delete_one({"_id": ObjectId(id)})
+    return str(res.deleted_count)
 
 # Add a user to the database
 # format for the user in the database:
