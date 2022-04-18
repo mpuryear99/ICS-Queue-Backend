@@ -101,6 +101,39 @@ def addappointment():
     res = appt_col.insert_one(data)
     return str(res.inserted_id)
 
+# adds an appointment when given json data
+@app.route('/appointments/add/post', methods=['POST'])
+def addappointmentpost():
+    received = request.get_json()
+    print(received)
+
+    data = ['user_id','machine_id','username','startTime','endTime']
+
+    for key in received.keys():
+        print(key)
+        if key == 'user_id':
+            user = users_col.find_one({'_id':ObjectId(str(received['user_id']))})
+            if user == None:
+                return "User does not exist"
+        elif key == 'machine_id':
+            machine = machines_col.find_one({'_id':ObjectId(str(received['machine_id']))})
+            if machine == None:
+                return "Machine does not exist"
+        elif key == 'username':
+            pass
+        elif key == 'startTime':
+            pass
+        elif key == 'endTime':
+            pass
+        else:
+            return "Invalid key"
+
+    res = appt_col.insert_one(received)
+    return res
+
+    #res = appt_col.insert_one(received)
+    #return str(res.inserted_id)
+
 # Returns all appointments within the week
 # example request: GET http://127.0.0.1:5000/getweekappointments/
 @app.route('/appointments/week', methods=['GET'])
