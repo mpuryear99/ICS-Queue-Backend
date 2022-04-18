@@ -91,7 +91,7 @@ def addappointment():
 
     data = {
         'user_id': ObjectId(recieved['name']),
-        'machineID': ObjectId(recieved['machineID']),
+        'machine_id': ObjectId(recieved['machineID']),
         'username': recieved['username'],
         'startTime': float(recieved['startTime']),
         'endTime': float(recieved['endTime'])
