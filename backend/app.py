@@ -24,7 +24,7 @@ appt_col = db['appointments']
 users_col = db['users']
 
 
-# ~~~~~~ MACHINE ~~~~~~
+# ~~~~~~ MACHINES ~~~~~~
 
 # Returns desired machine based on name
 @app.route('/machines/<id>', methods=['GET'])
@@ -62,9 +62,43 @@ def addmachine():
         "image": recv['image'],
         "description": recv['description']
     }
+    try:
+        if m['description'][0] == ' ':
+            m['description'] = m['description'][1:]
+        m['description'] = m['description'].capitalize()
+    except Exception as e:
+        print(e)
     print(m)
     res = machines_col.insert_one(m)
     return str(res.inserted_id)
+
+# adds a machine to database using json data
+@app.route('/machines/add/post', methods=['POST'])
+def addmachinespost():
+    received = request.get_json()
+    print(received)
+
+    data = ['name','image','description']
+
+    for key in received.keys():
+        print(key)
+        if key == 'description':
+            try:
+                if received['description'][0] == ' ':
+                    received['description'] = received['description'][1:]
+                    received['description'] = received['description'].capitalize()
+            except Exception as e:
+                    print(e)
+        elif key == 'name':
+            pass
+        elif key == 'image':
+            pass
+        else:
+            return "Invalid key"
+
+    res = machines_col.insert_one(received)
+    return res
+
 
 # Deletes machine from database
 @app.route('/machines/<id>/delete', methods=['DELETE'])

@@ -3,7 +3,7 @@ GET     /machines
 GET     /machines/<id>
 DEL     /machines/<id>?delete
 POST    /machines/add
-POST    /machines/<id>/add
+POST    /machines/add/post
 
 GET     /appointments
             ?machineid=     machine._id
