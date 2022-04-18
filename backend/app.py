@@ -1,6 +1,6 @@
 from platform import machine
 from pprint import pprint
-from flask import Flask, redirect, url_for, request
+from flask import Flask, redirect, url_for, request, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
 import json
@@ -43,7 +43,7 @@ def getmachines():
     for m in machines_col.find({}):
         m['_id'] = str(m['_id'])
         data.append(m)
-    return json.dumps(data)
+    return jsonify(data)
 
 # Add a machine to the database
 # Machine structure in the database:
@@ -187,26 +187,31 @@ def getweekappointments():
     for a in appt_col.find({"startTime": {"$gte": now, "$lt": nextWeek}}):
         a['_id'] = str(a['_id'])
         data.append(a)
-    return json.dumps(data)
+    return jsonify(data)
 
-# Returns all appointments within start and end time frames
-# Example request: GET http://127.0.0.1:5000/appointments/bytime
-#                           ?startBefore=float
-#                           &startAfter=float
-#                           &endBefore=float
-#                           &endAfter=float
-#                           &existCheck
+# Returns all appointments that fit query based on start/end time ranges and associated _ids.
+# Example request: 
+#   GET http://127.0.0.1:5000/appointments/query
+#           ?startBefore=float
+#           &startAfter=float
+#           &endBefore=float
+#           &endAfter=float
+#           &machine_id=str
+#           &user_id=str
+#           &existCheck
 # All parameters are optional.
 # Param `existCheck` return true/false based on existance of object(s).
-@app.route('/appointments/bytime', methods=['GET'])
+@app.route('/appointments/query', methods=['GET'])
 def getappointmentbytime():
     received = request.args.to_dict()
 
-    startBefore = received.setdefault('startBefore', None)
-    startAfter  = received.setdefault('startAfter', None)
-    endBefore   = received.setdefault('endBefore', None)
-    endAfter    = received.setdefault('endAfter', None)
-    existCheck  = received.setDefault('existCheck', None)
+    startBefore = received.get('startBefore', None)
+    startAfter  = received.get('startAfter', None)
+    endBefore   = received.get('endBefore', None)
+    endAfter    = received.get('endAfter', None)
+    machine_id  = received.get('machine_id', None)
+    user_id     = received.get('user_id', None)
+    existCheck  = received.get('existCheck', None)
 
     findParams = {}
     if (startBefore is not None):
@@ -221,19 +226,24 @@ def getappointmentbytime():
     if (endAfter is not None):
         p = findParams.setdefault('endTime', {})
         p['$gte'] = float(endAfter)
+    if (machine_id is not None):
+        p['machine_id'] = ObjectId(machine_id)
+    if (user_id is not None):
+        p['user_id'] = ObjectId(user_id)
+
 
     if (existCheck is not None):
         exists = False
         for a in appt_col.find(findParams):
             exists = True
             break
-        return json.dumps(exists)
+        return jsonify(exists)
 
     data = []
     for a in appt_col.find(findParams):
         a['_id'] = str(a['_id'])
         data.append(a)
-    return json.dumps(data)
+    return jsonify(data)
 
 # Returns all appointments 
 # example request: GET http://127.0.0.1:5000/appointments/
@@ -243,7 +253,7 @@ def getallappointments():
     for a in appt_col.find({}):
         a['_id'] = str(a['_id'])
         data.append(a)
-    return json.dumps(data)
+    return jsonify(data)
 
 # Returns information about an appointment based on its ID
 @app.route('/appointments/<id>', methods=['GET'])
@@ -266,7 +276,7 @@ def getusers():
     for u in users_col.find({}):
         u['_id'] = str(u['_id'])
         data.append(u)
-    return json.dumps(data)
+    return jsonify(data)
 
 # Return a user based on id
 @app.route('/users/<id>', methods=['GET'])
