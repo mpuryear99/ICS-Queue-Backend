@@ -229,6 +229,7 @@ def getappointmentbytime():
             break
         return json.dumps(exists)
 
+    data = []
     for a in appt_col.find(findParams):
         a['_id'] = str(a['_id'])
         data.append(a)
