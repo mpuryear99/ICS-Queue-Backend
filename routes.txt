@@ -10,6 +10,8 @@ GET     /appointments
 GET     /appointment/<id>
 DEL     /appointment/<id>?delete
 POST    /appointments/add
+POST    /appointments/add/post
+-- first accepts data in json format
 
 GET     /users
 GET     /users/<id>

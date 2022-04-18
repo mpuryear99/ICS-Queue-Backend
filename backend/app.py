@@ -131,8 +131,6 @@ def addappointmentpost():
     res = appt_col.insert_one(received)
     return res
 
-    #res = appt_col.insert_one(received)
-    #return str(res.inserted_id)
 
 # Returns all appointments within the week
 # example request: GET http://127.0.0.1:5000/getweekappointments/
