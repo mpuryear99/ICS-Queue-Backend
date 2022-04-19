@@ -8,6 +8,7 @@ import os
 import time
 from dotenv import load_dotenv
 from bson import ObjectId
+from http import HTTPStatus
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -30,11 +31,11 @@ users_col = db['users']
 @app.route('/machines/<id>', methods=['GET'])
 def getmachine(id):
     data = machines_col.find_one({'_id':ObjectId(id)})
-    if data != None:
-        data['_id'] = str(data['_id'])
-        print(data)
-        return data
-    return "Machine not found"
+    if data is None:
+        return "Machine not found", HTTPStatus.NOT_FOUND
+    data['_id'] = str(data['_id'])
+    print(data)
+    return jsonify(data)
 
 # Returns all the machines in the database
 @app.route('/machines', methods=['GET'])
@@ -63,9 +64,7 @@ def addmachine():
         "description": recv['description']
     }
     try:
-        if m['description'][0] == ' ':
-            m['description'] = m['description'][1:]
-        m['description'] = m['description'].capitalize()
+        m['description'] = m['description'].strip().capitalize()
     except Exception as e:
         print(e)
     print(m)
@@ -79,22 +78,20 @@ def addmachinespost():
     print(received)
 
     data = ['name','image','description']
-
+    
     for key in received.keys():
         print(key)
         if key == 'description':
             try:
-                if received['description'][0] == ' ':
-                    received['description'] = received['description'][1:]
-                    received['description'] = received['description'].capitalize()
+                received['description'] = received['description'].strip().capitalize()
             except Exception as e:
-                    print(e)
+                print(e)
         elif key == 'name':
             pass
         elif key == 'image':
             pass
         else:
-            return "Invalid key"
+            return f"Invalid key: {key}", HTTPStatus.BAD_REQUEST
 
     res = machines_col.insert_one(received)
     return res
@@ -133,7 +130,11 @@ def addappointment():
     }
     print("data: ", data)
     
+    # try to insert the appointment into appointment collection
     res = appt_col.insert_one(data)
+    if not ObjectId.is_valid(res.inserted_id):
+        return "Insertion failed", HTTPStatus.INTERNAL_SERVER_ERROR
+
     return str(res.inserted_id)
 
 # adds an appointment when given json data
@@ -148,12 +149,12 @@ def addappointmentpost():
         print(key)
         if key == 'user_id':
             user = users_col.find_one({'_id':ObjectId(str(received['user_id']))})
-            if user == None:
-                return "User does not exist"
+            if user is None:
+                return "User does not exist", HTTPStatus.BAD_REQUEST
         elif key == 'machine_id':
             machine = machines_col.find_one({'_id':ObjectId(str(received['machine_id']))})
-            if machine == None:
-                return "Machine does not exist"
+            if machine is None:
+                return "Machine does not exist", HTTPStatus.BAD_REQUEST
         elif key == 'username':
             pass
         elif key == 'startTime':
@@ -161,18 +162,19 @@ def addappointmentpost():
         elif key == 'endTime':
             pass
         else:
-            return "Invalid key"
+            return f"Invalid key: {key}", HTTPStatus.BAD_REQUEST
 
     # try to insert the appointment into appointment collection
     res = appt_col.insert_one(received)
     if not ObjectId.is_valid(res.inserted_id):
-        return "Insertions failed"
-    # add appointment to user's appointments array
-    user = users_col.update_one({"_id": ObjectId(received['user_id'])}, {"$push": {"appointments": res.inserted_id}})
-    if user.upserted_id == None:
-        return "Update failed"
+        return "Insertion failed", HTTPStatus.INTERNAL_SERVER_ERROR
 
-    return res
+    # add appointment to user's appointments array
+    # user = users_col.update_one({"_id": ObjectId(received['user_id'])}, {"$push": {"appointments": res.inserted_id}})
+    # if user.upserted_id == None:
+    #     return "Update failed"
+
+    return str(res.inserted_id), HTTPStatus.CREATED
 
 
 # Returns all appointments within the week
@@ -198,11 +200,11 @@ def getweekappointments():
 #           &endAfter=float
 #           &machine_id=str
 #           &user_id=str
-#           &existCheck
+#           &checkOnly
 # All parameters are optional.
-# Param `existCheck` return true/false based on existance of object(s).
+# Param `checkOnly` return true/false based on existance of object(s).
 @app.route('/appointments/query', methods=['GET'])
-def getappointmentbytime():
+def getappointmentbyquery():
     received = request.args.to_dict()
 
     startBefore = received.get('startBefore', None)
@@ -211,7 +213,7 @@ def getappointmentbytime():
     endAfter    = received.get('endAfter', None)
     machine_id  = received.get('machine_id', None)
     user_id     = received.get('user_id', None)
-    existCheck  = received.get('existCheck', None)
+    checkOnly   = received.get('checkOnly', None)
 
     findParams = {}
     if (startBefore is not None):
@@ -231,8 +233,7 @@ def getappointmentbytime():
     if (user_id is not None):
         p['user_id'] = ObjectId(user_id)
 
-
-    if (existCheck is not None):
+    if (checkOnly is not None):
         exists = False
         for a in appt_col.find(findParams):
             exists = True
@@ -258,7 +259,12 @@ def getallappointments():
 # Returns information about an appointment based on its ID
 @app.route('/appointments/<id>', methods=['GET'])
 def getappointment(id):
-    pass
+    data = appt_col.find_one({'_id':ObjectId(id)})
+    if data is None:
+        return "Machine not found", HTTPStatus.NOT_FOUND
+    data['_id'] = str(data['_id'])
+    print(data)
+    return jsonify(data)
 
 # Deletes an appointment based on its ID
 @app.route('/appointments/<id>/delete', methods=['DELETE'])
@@ -282,11 +288,11 @@ def getusers():
 @app.route('/users/<id>', methods=['GET'])
 def getuser(id):
     data = users_col.find_one({'_id':ObjectId(id)})
-    if data != None:
-        data['_id'] = str(data['_id'])
-        print(data)
-        return data
-    return "User does not exist"
+    if data is None:
+        return "User not found", HTTPStatus.NOT_FOUND
+    data['_id'] = str(data['_id'])
+    print(data)
+    return jsonify(data)
 
 # Delete a user from the database
 @app.route('/users/<id>/delete', methods=['DELETE'])
