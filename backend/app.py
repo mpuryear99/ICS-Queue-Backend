@@ -272,8 +272,8 @@ def getappointment(id):
 # Deletes an appointment based on its ID
 @app.route('/appointments/<id>/delete', methods=['DELETE'])
 def deleteappointment(id):
-    pass
-
+    res = appt_col.delete_one({"_id": ObjectId(id)})
+    return str(res.deleted_count)
 
 
 # ~~~~~~ USERS ~~~~~~
@@ -309,23 +309,25 @@ def deleteuser(id):
 #     _id,
 #     netid,
 #     email,
+#     admin,
 # }
 @app.route('/users/add', methods=['POST'])
 def adduser():
     recv = request.args.to_dict()
 
     user = {
-        'netid': recv['netid'],
-        'email': recv['email'],
-        'appointments': []
+        'netid': str(recv['netid']),
+        'email': str(recv['email']),
+        'admin': bool(recv['admin'])
     }
-    print(user)
+
     res = users_col.insert_one(user)
     return str(res.inserted_id)
 
 @app.route('/users/add/post', methods=['POST'])
 def adduserpost():
     pass
+
 
 # ~~~~~~ helper functions ~~~~~~
 # These are functions that help in the back-end and cannot be accessed by front-end
@@ -335,9 +337,7 @@ def addmachines(fn):
     js = json.load(open(fn))
     for m in js:
         try:
-            if m['description'][0] == ' ':
-                m['description']=m['description'][1:]
-            m['description'] = m['description'].capitalize()
+            m['description'] = m['description'].strip().capitalize()
         except Exception as e:
             print(e)
         print(m)

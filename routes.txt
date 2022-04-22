@@ -39,8 +39,8 @@ appointment {
 }
 
 user {
-    _id,
-    netid,
-    email,
-    appointments: [<_id>, ...]
+    _id:    ObjectID(str)
+    netid:  str
+    email:  str
+    admin:  bool
 }
