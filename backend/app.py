@@ -1,5 +1,7 @@
 from platform import machine
 from pprint import pprint
+from typing import Dict
+import dotenv
 from flask import Flask, redirect, url_for, request, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
@@ -14,7 +16,8 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-load_dotenv(dotenv_path='./config.env')
+dotenv_path = os.path.join(os.path.dirname(__file__), "config.env")
+load_dotenv(dotenv_path=dotenv_path)
 ATLAS_URI = os.environ.get('ATLAS_URI')
 client = MongoClient(ATLAS_URI)
 
@@ -125,8 +128,8 @@ def addappointment():
         'user_id': ObjectId(recieved['user_id']),
         'machine_id': ObjectId(recieved['machine_id']),
         'username': recieved['username'],
-        'startTime': float(recieved['startTime']),
-        'endTime': float(recieved['endTime'])
+        'startTime': int(recieved['startTime']),
+        'endTime': int(recieved['endTime'])
     }
     print("data: ", data)
     
@@ -140,29 +143,37 @@ def addappointment():
 # adds an appointment when given json data
 @app.route('/appointments/add/post', methods=['POST'])
 def addappointmentpost():
-    received = request.get_json()
+    received: Dict[str] = request.get_json()
     print(received)
 
-    data = ['user_id','machine_id','username','startTime','endTime']
+    req_keys = {'user_id','machine_id','username','startTime','endTime'}
 
-    for key in received.keys():
-        print(key)
-        if key == 'user_id':
-            user = users_col.find_one({'_id':ObjectId(str(received['user_id']))})
+    data = {}
+    for key,value in received.items():
+        if key not in req_keys:
+            continue
+        
+        if key == "user_id":
+            value = ObjectId(str(value))
+            user = users_col.find_one({'_id':value})
             if user is None:
                 return "User does not exist", HTTPStatus.BAD_REQUEST
-        elif key == 'machine_id':
-            machine = machines_col.find_one({'_id':ObjectId(str(received['machine_id']))})
+        elif key == "machine_id":
+            value = ObjectId(str(value))
+            machine = machines_col.find_one({'_id':value})
             if machine is None:
                 return "Machine does not exist", HTTPStatus.BAD_REQUEST
         elif key == 'username':
-            pass
+            value = str(value)
         elif key == 'startTime':
-            pass
+            value = int(value)
         elif key == 'endTime':
-            pass
-        else:
-            return f"Invalid key: {key}", HTTPStatus.BAD_REQUEST
+            value = int(value)
+        
+        data[key] = value
+    
+    if len(req_keys):
+        return f"Missing keys: {req_keys}", HTTPStatus.BAD_REQUEST
 
     # try to insert the appointment into appointment collection
     res = appt_col.insert_one(received)
@@ -176,20 +187,6 @@ def addappointmentpost():
 
     return str(res.inserted_id), HTTPStatus.CREATED
 
-
-# Returns all appointments within the week
-# example request: GET http://127.0.0.1:5000/getweekappointments/
-@app.route('/appointments/week', methods=['GET'])
-def getweekappointments():
-    data = []
-    now = time.time()
-    nextWeek = now + 604800 # 604800 seconds in a week
-    print(now)
-    # finds appointments between now and one week from now
-    for a in appt_col.find({"startTime": {"$gte": now, "$lt": nextWeek}}):
-        a['_id'] = str(a['_id'])
-        data.append(a)
-    return jsonify(data)
 
 # Returns all appointments that fit query based on start/end time ranges and associated _ids.
 # Example request: 
@@ -243,6 +240,8 @@ def getappointmentbyquery():
     data = []
     for a in appt_col.find(findParams):
         a['_id'] = str(a['_id'])
+        a['machine_id'] = str(a['machine_id'])
+        a['user_id'] = str(a['user_id'])
         data.append(a)
     return jsonify(data)
 
@@ -253,6 +252,8 @@ def getallappointments():
     data = []
     for a in appt_col.find({}):
         a['_id'] = str(a['_id'])
+        a['machine_id'] = str(a['machine_id'])
+        a['user_id'] = str(a['user_id'])
         data.append(a)
     return jsonify(data)
 
@@ -261,8 +262,10 @@ def getallappointments():
 def getappointment(id):
     data = appt_col.find_one({'_id':ObjectId(id)})
     if data is None:
-        return "Machine not found", HTTPStatus.NOT_FOUND
+        return "Appointment not found", HTTPStatus.NOT_FOUND
     data['_id'] = str(data['_id'])
+    data['machine_id'] = str(data['machine_id'])
+    data['user_id'] = str(data['user_id'])
     print(data)
     return jsonify(data)
 
@@ -306,7 +309,6 @@ def deleteuser(id):
 #     _id,
 #     netid,
 #     email,
-#     appointments: [<_id>, ...]
 # }
 @app.route('/users/add', methods=['POST'])
 def adduser():
