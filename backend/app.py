@@ -265,6 +265,8 @@ def getappointment(id):
     if data is None:
         return "Machine not found", HTTPStatus.NOT_FOUND
     data['_id'] = str(data['_id'])
+    data['user_id'] = str(data['user_id'])
+    data['machine_id'] = str(data['machine_id'])
     print(data)
     return jsonify(data)
 
