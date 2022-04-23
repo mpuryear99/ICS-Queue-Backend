@@ -253,6 +253,8 @@ def getallappointments():
     data = []
     for a in appt_col.find({}):
         a['_id'] = str(a['_id'])
+        a['user_id'] = str(a['user_id'])
+        a['machine_id'] = str(a['machine_id'])
         data.append(a)
     return jsonify(data)
 
