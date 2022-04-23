@@ -188,6 +188,8 @@ def getweekappointments():
     # finds appointments between now and one week from now
     for a in appt_col.find({"startTime": {"$gte": now, "$lt": nextWeek}}):
         a['_id'] = str(a['_id'])
+        a['user_id'] = str(a['user_id'])
+        a['machine_id'] = str(a['machine_id'])
         data.append(a)
     return jsonify(data)
 
@@ -243,6 +245,8 @@ def getappointmentbyquery():
     data = []
     for a in appt_col.find(findParams):
         a['_id'] = str(a['_id'])
+        a['user_id'] = str(a['user_id'])
+        a['machine_id'] = str(a['machine_id'])
         data.append(a)
     return jsonify(data)
 
