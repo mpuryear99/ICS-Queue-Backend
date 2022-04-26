@@ -313,20 +313,35 @@ def deleteuser(id):
 # }
 @app.route('/users/add', methods=['POST'])
 def adduser():
-    recv = request.args.to_dict()
+    contentType = request.headers.get("Content-Type", "")
 
-    user = {
-        'netid': str(recv['netid']),
-        'email': str(recv['email']),
-        'admin': bool(recv['admin'])
-    }
+    if contentType == "application/json":
+        req_keys = {'netid', 'email', 'admin'}
+        recv = request.get_json()
+        user = {
+            'netid': str(recv['netid']),
+            'email': str(recv['email']),
+            'admin': bool(recv['admin']),
+        }
 
+    else:
+        recv = request.args.to_dict()
+        user = {
+            'netid': str(recv['netid']),
+            'email': str(recv['email']),
+            'admin': bool(recv['admin']),
+        }
+    
+     # try to insert the user into db user collection
     res = users_col.insert_one(user)
-    return str(res.inserted_id)
+    if not ObjectId.is_valid(res.inserted_id):
+        return "Insertion failed", HTTPStatus.INTERNAL_SERVER_ERROR
 
-@app.route('/users/add/post', methods=['POST'])
-def adduserpost():
-    pass
+    return str(res.inserted_id), HTTPStatus.CREATED
+
+# @app.route('/users/add/post', methods=['POST'])
+# def adduserpost():
+#     pass
 
 
 # ~~~~~~ helper functions ~~~~~~
