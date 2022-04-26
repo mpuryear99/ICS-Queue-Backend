@@ -226,9 +226,9 @@ def getappointmentbyquery():
         p = findParams.setdefault('endTime', {})
         p['$gte'] = float(endAfter)
     if (machine_id is not None):
-        p['machine_id'] = ObjectId(machine_id)
+        findParams['machine_id'] = ObjectId(machine_id)
     if (user_id is not None):
-        p['user_id'] = ObjectId(user_id)
+        findParams['user_id'] = ObjectId(user_id)
 
     if (checkOnly is not None):
         exists = False
