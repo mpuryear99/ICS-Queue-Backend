@@ -240,8 +240,8 @@ def getappointmentbyquery():
     data = []
     for a in appt_col.find(findParams):
         a['_id'] = str(a['_id'])
-        a['machine_id'] = str(a['machine_id'])
         a['user_id'] = str(a['user_id'])
+        a['machine_id'] = str(a['machine_id'])
         data.append(a)
     return jsonify(data)
 
@@ -252,8 +252,8 @@ def getallappointments():
     data = []
     for a in appt_col.find({}):
         a['_id'] = str(a['_id'])
-        a['machine_id'] = str(a['machine_id'])
         a['user_id'] = str(a['user_id'])
+        a['machine_id'] = str(a['machine_id'])
         data.append(a)
     return jsonify(data)
 
@@ -264,8 +264,8 @@ def getappointment(id):
     if data is None:
         return "Appointment not found", HTTPStatus.NOT_FOUND
     data['_id'] = str(data['_id'])
-    data['machine_id'] = str(data['machine_id'])
     data['user_id'] = str(data['user_id'])
+    data['machine_id'] = str(data['machine_id'])
     print(data)
     return jsonify(data)
 
