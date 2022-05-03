@@ -1,7 +1,6 @@
 from platform import machine
 from pprint import pprint
 from typing import Dict
-import dotenv
 from flask import Flask, redirect, url_for, request, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
@@ -198,8 +197,11 @@ def addappointmentpost():
 #           &machine_id=str
 #           &user_id=str
 #           &checkOnly
-# All parameters are optional.
-# Param `checkOnly` return true/false based on existance of object(s).
+#           $count
+# All parameters are optional. Param `checkOnly` overrides `count`.
+# Param `count` returns number of objects matching query.
+# Param `checkOnly` overrides `count` and returns True/False result of count > 0.
+# All returns are json.
 @app.route('/appointments/query', methods=['GET'])
 def getappointmentbyquery():
     received = request.args.to_dict()
@@ -210,7 +212,8 @@ def getappointmentbyquery():
     endAfter    = received.get('endAfter', None)
     machine_id  = received.get('machine_id', None)
     user_id     = received.get('user_id', None)
-    checkOnly   = received.get('checkOnly', None)
+    checkOnly   = received.get('checkOnly', None) is not None
+    getCount    = received.get('count', None) is not None
 
     findParams = {}
     if (startBefore is not None):
@@ -230,12 +233,16 @@ def getappointmentbyquery():
     if (user_id is not None):
         findParams['user_id'] = ObjectId(user_id)
 
-    if (checkOnly is not None):
+    if (checkOnly):
         exists = False
         for a in appt_col.find(findParams):
             exists = True
             break
         return jsonify(exists)
+
+    if (getCount):
+        count = appt_col.count_documents(findParams)
+        return jsonify(count)
 
     data = []
     for a in appt_col.find(findParams):
@@ -286,6 +293,12 @@ def getusers():
         u['_id'] = str(u['_id'])
         data.append(u)
     return jsonify(data)
+
+# Return user count
+@app.route('/usercount')
+def getusercount():
+    count = users_col.estimated_document_count()
+    return jsonify(count)
 
 # Return a user based on id
 @app.route('/users/<id>', methods=['GET'])
